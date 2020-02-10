@@ -57,6 +57,7 @@ class Encode(Resource):
         db.session.add(db_obj)
         db.session.commit()
         return_obj = {
+            "success": True,
             "url": url,
             "encoding": se.base64_encode(db_obj._id).decode("utf-8")
         }

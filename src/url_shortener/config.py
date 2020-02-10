@@ -10,15 +10,19 @@ class Config:
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'testJWTKey')
     JWT_BLACKLIST_ENABLED = True
     JWT_BLACKLIST_TOKEN_CHECKS = ['access', 'refresh']
+
+
+class ProductionConfig(Config):
     username, password, db = os.getenv('POSTGRES_USER'), os.getenv('POSTGRES_PASSWORD'), os.getenv('POSTGRES_DB')
     SQLALCHEMY_DATABASE_URI = f"postgresql://{username}:{password}@postgres:5432/{db}"
+    DEBUG = False
 
 
 class DevelopmentConfig(Config):
-    # uncomment the line below to use postgres
-    # SQLALCHEMY_DATABASE_URI = postgres_local_base
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    username, password, db = os.getenv('POSTGRES_USER'), os.getenv('POSTGRES_PASSWORD'), os.getenv('POSTGRES_DB')
+    SQLALCHEMY_DATABASE_URI = f"postgresql://{username}:{password}@postgres:5432/{db}"
 
 
 class TestingConfig(Config):
@@ -26,12 +30,7 @@ class TestingConfig(Config):
     TESTING = True
     PRESERVE_CONTEXT_ON_EXCEPTION = False
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-
-
-class ProductionConfig(Config):
-    DEBUG = False
-    # uncomment the line below to use postgres
-    # SQLALCHEMY_DATABASE_URI = postgres_local_base
+    SQLALCHEMY_DATABASE_URI = "sqlite:///url_shortener_test.db"
 
 
 config_by_name = dict(

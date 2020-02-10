@@ -34,7 +34,7 @@ class Register(Resource):
         args = self.parser.parse_args()
         username, email, password = str(args['username']), str(args['email']), str(args['password'])
         if User.find_by_username(username):
-            return {"success": False, "message": f"User {username} already exists"}
+            return {"success": False, "message": f"User '{username}' already exists"}
 
         user = User(username=username, email=email)
         user.set_password(password)
@@ -101,13 +101,6 @@ class TokenRefresh(Resource):
         return {"success": True, "access_token": access_token}
 
 
-class Secret(Resource):
-    @jwt_optional
-    def get(self):
-        jwt = get_raw_jwt()
-        return {"message": "secret", "jwt": jwt}
-
-
 @jwt_manager.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
     jti = decrypted_token['jti']
@@ -119,4 +112,3 @@ users.add_resource(Login, '/login')
 users.add_resource(LogoutAccess, '/logout/access')
 users.add_resource(LogoutRefresh, '/logout/refresh')
 users.add_resource(TokenRefresh, '/token/refresh')
-users.add_resource(Secret, '/secret')
