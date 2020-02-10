@@ -2,6 +2,7 @@ import os
 
 from url_shortener.url_shortener import create_app
 import url_shortener.errors
+# import url_shortener.jobs.expire_urls
 
 
 app = create_app(os.getenv('BOILERPLATE_ENV') or 'dev')

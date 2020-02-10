@@ -1,6 +1,7 @@
 """Logic for URL encoding.
 """
 import logging
+from datetime import timedelta, datetime
 
 import flask_restful
 from flask_restful import Resource, reqparse
@@ -17,19 +18,33 @@ shorten_bp = Blueprint('shorten', __name__)
 shorten = flask_restful.Api(shorten_bp)
 
 
+# Set expiry to one week
+EXPIRY_PERIOD = 60 * 60 * 24 * 7
+
+
 class Decode(Resource):
     def post(self, encoded_str: str):
         """Use encoded string to fetch URL from the URL registry.
 
         Arguments:
             encoded_str: Base64 encoded string, corresponding to an id in the URL registry.
+
+        Returns:
+            A redirect to the decoded URL. The URL is deleted if it has reached its expiry
+            date.
         """
         decoded = se.base64_decode(encoded_str)
-        q = db.session.query(UrlRegistry.url).filter(UrlRegistry._id == decoded).all()
-        if not q:
-            raise ValueError(f"String `{encoded_str}` does not map to a URL")
+        q = db.session.query(UrlRegistry).filter(UrlRegistry._id == decoded).first()
 
-        return redirect(q[0].url)
+        if not q:
+            return {"success": False, "message": f"String {encoded_str} does not map to an URL."}, 404
+
+        if not q.premium and (q.date_added + timedelta(seconds=EXPIRY_PERIOD)) < datetime.now():
+            db.session.query(UrlRegistry).filter(UrlRegistry._id == decoded).delete()
+            db.session.commit()
+            return {"success": False, "message": "Url has expired. Deleting record."}, 498
+
+        return redirect(q.url)
 
 
 class Encode(Resource):
@@ -49,6 +64,7 @@ class Encode(Resource):
         url = str(args['url'])
 
         db_obj = UrlRegistry(url=url)
+
         # Check if user passes JWT
         user_id = get_raw_jwt().get('identity')
         if user_id and User.find_by_username(user_id):
@@ -61,7 +77,7 @@ class Encode(Resource):
             "url": url,
             "encoding": se.base64_encode(db_obj._id).decode("utf-8")
         }
-        return jsonify(return_obj)
+        return return_obj, 200
 
 
 shorten.add_resource(Encode, '/encode')

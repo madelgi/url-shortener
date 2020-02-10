@@ -7,12 +7,12 @@ RUN mkdir /home/url_shortener/web
 WORKDIR /home/url_shortener
 
 # Build conda environment (do this before other steps b/c it is time consuming)
-COPY web/environment.yml ./web/environment.yml
-RUN conda env create -f ./web/environment.yml
+COPY web/environment.yml .
+RUN conda env create -f environment.yml
+RUN rm environment.yml
 
 # Copy other files/folders to working directory, switch working directory
 COPY web ./web
-COPY .git ./web/.git
 WORKDIR /home/url_shortener/web
 
 # Make boot scripts executable

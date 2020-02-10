@@ -18,6 +18,8 @@ def create_app(config_name):
     from .api.shorten import shorten, shorten_bp
     app.register_blueprint(users_bp)
     app.register_blueprint(shorten_bp)
+
+    # Register error handlers
     register_error_handlers(app)
 
     return app
