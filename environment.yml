@@ -1,0 +1,20 @@
+name: url_shortener
+channels:
+    - conda-forge
+dependencies:
+    - python=3.7
+    - sqlalchemy
+    - flask
+    - flask-jwt-extended
+    - flask-restplus
+    - flask-sqlalchemy
+    - flask-bcrypt
+    - flask-migrate
+    - flask-script
+    - flask-login
+    - flask-restful
+    - python-dotenv
+    - psycopg2
+    - gunicorn
+    - pyjwt
+    - pip
