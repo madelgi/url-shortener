@@ -2,3 +2,4 @@ docs/
 .cache
 .coverage
 .flaskenv
+url_shortener_test.db
