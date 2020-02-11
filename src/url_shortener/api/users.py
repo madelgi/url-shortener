@@ -34,7 +34,7 @@ class Register(Resource):
         args = self.parser.parse_args()
         username, email, password = str(args['username']), str(args['email']), str(args['password'])
         if User.find_by_username(username):
-            return {"success": False, "message": f"User '{username}' already exists"}
+            return {"success": False, "message": f"User '{username}' already exists"}, 400
 
         user = User(username=username, email=email)
         user.set_password(password)
@@ -46,7 +46,7 @@ class Register(Resource):
             "success": True,
             'access_token': access_token,
             'refresh_token': refresh_token
-        }
+        }, 200
 
 
 class Login(Resource):
@@ -61,10 +61,10 @@ class Login(Resource):
         username, password = str(args['username']), str(args['password'])
         current_user = User.find_by_username(username)
         if not current_user:
-            return {"success": False, "message": f"User '{username}' does not exist"}
+            return {"success": False, "message": f"User '{username}' does not exist"}, 400
 
         if not current_user.check_password(password):
-            return {"success": False, "message": "Incorrect password"}
+            return {"success": False, "message": "Incorrect password"}, 400
 
         access_token = create_access_token(identity=username)
         refresh_token = create_refresh_token(identity=username)
@@ -72,7 +72,7 @@ class Login(Resource):
             "success": True,
             'access_token': access_token,
             'refresh_token': refresh_token
-        }
+        }, 200
 
 
 class LogoutAccess(Resource):
@@ -81,7 +81,7 @@ class LogoutAccess(Resource):
         jti = get_raw_jwt()['jti']
         revoked_token = RevokedToken(jti=jti)
         revoked_token.add()
-        return {"success": True}
+        return {"success": True}, 200
 
 
 class LogoutRefresh(Resource):
@@ -90,7 +90,7 @@ class LogoutRefresh(Resource):
         jti = get_raw_jwt()['jti']
         revoked_token = RevokedToken(jti=jti)
         revoked_token.add()
-        return {"success": True}
+        return {"success": True}, 200
 
 
 class TokenRefresh(Resource):
@@ -98,7 +98,7 @@ class TokenRefresh(Resource):
     def post(self):
         current_user = get_jwt_identity()
         access_token = create_access_token(identity=current_user)
-        return {"success": True, "access_token": access_token}
+        return {"success": True, "access_token": access_token}, 200
 
 
 @jwt_manager.token_in_blacklist_loader
