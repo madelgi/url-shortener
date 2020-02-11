@@ -10,12 +10,12 @@ from flask_jwt_extended import jwt_optional, get_raw_jwt
 
 import url_shortener.util.string_encoder as se
 from url_shortener.extensions import db
-from url_shortener.models import UrlRegistry, User
+from url_shortener.models import UrlRegistry, Users
 
 logger = logging.getLogger(__name__)
 
-shorten_bp = Blueprint('shorten', __name__)
-shorten = flask_restful.Api(shorten_bp)
+urls_bp = Blueprint('shorten', __name__)
+urls = flask_restful.Api(urls_bp)
 
 
 # Set expiry to one week
@@ -23,8 +23,8 @@ EXPIRY_PERIOD = 60 * 60 * 24 * 7
 
 
 class Decode(Resource):
-    def post(self, encoded_str: str):
-        """Use encoded string to fetch URL from the URL registry.
+    def post(self, encoded_str:  str):
+        """Use encoded string to  fetch URL from the URL registry.
 
         Arguments:
             encoded_str: Base64 encoded string, corresponding to an id in the URL registry.
@@ -48,13 +48,16 @@ class Decode(Resource):
 
 
 class Encode(Resource):
+    """Resource for creating and managing encoded URLs.
+    """
     def __init__(self):
         parser = reqparse.RequestParser()
         parser.add_argument('url', type=str)
+        parser.add_argument('encoded_str', type=str)
         self.parser = parser
 
     @jwt_optional
-    def post(self) -> str:
+    def post(self) -> (dict, int):
         """Encode a URL.
 
         Arguments:
@@ -67,7 +70,7 @@ class Encode(Resource):
 
         # Check if user passes JWT
         user_id = get_raw_jwt().get('identity')
-        if user_id and User.find_by_username(user_id):
+        if user_id and Users.find_by_username(user_id):
             db_obj.premium = True
 
         db.session.add(db_obj)
@@ -79,6 +82,40 @@ class Encode(Resource):
         }
         return return_obj, 200
 
+    def get(self) -> (dict, int):
+        """Get an existing encoded URL.
 
-shorten.add_resource(Encode, '/encode')
-shorten.add_resource(Decode, '/<string:encoded_str>')
+        Arguments:
+            encoded_str: The string representing the encoded URL.
+        """
+        encoded_str = str(self.parser.parse_args()['encoded_str'])
+        decoded = se.base64_decode(encoded_str)
+        q = db.session.query(UrlRegistry).filter(UrlRegistry._id == decoded).first()
+
+        if not q:
+            return {"success": False, "message": f"String {encoded_str} does not map to an URL."}, 404
+
+        return {"success": True, "url": q.url}, 200
+
+    def put(self) -> (dict, int):
+        """Update an existing URL.
+
+        Arguments:
+            encoded_str: Base64-encoded string mapping to the existing URL.
+            url: Url to replace the existing URL.
+        """
+        args = self.parser.parse_args()
+        encoded_str, new_url = str(args['encoded_str']), str(args['url'])
+        decoded = se.base64_decode(encoded_str)
+        q = db.session.query(UrlRegistry).filter(UrlRegistry._id == decoded).first()
+
+        if not q:
+            return {"success": False, "message": f"String {encoded_str} does not map to an URL."}, 404
+
+        old_url, q.url = q.url, new_url
+        db.session.commit()
+        return {"success": True, "old_url": old_url, "new_url": new_url}, 200
+
+
+urls.add_resource(Encode, '/encode')
+urls.add_resource(Decode, '/<string:encoded_str>')

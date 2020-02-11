@@ -6,11 +6,12 @@ import jwt
 from flask import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_sqlalchemy
 
 from url_shortener.extensions import db, login
 
 
-class User(UserMixin, db.Model):
+class Users(UserMixin, db.Model):
     """Model for users in our app.
 
     Arguments:
@@ -23,6 +24,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(160), unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
+    premium = db.Column(db.Boolean, default=False)
 
     def set_password(self, password: str) -> None:
         """Set user's password hash.
@@ -44,7 +46,7 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     @classmethod
-    def find_by_username(cls, uname: str) -> 'User':
+    def find_by_username(cls, uname: str) -> 'Users':
         """Return a user object based on username.
 
         Arguments:
@@ -68,7 +70,7 @@ class UrlRegistry(db.Model):
     _id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(1024))
     date_added = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    premium = db.Column(db.Boolean, default=False)
+    user_id = rel
 
 
 class RevokedToken(db.Model):

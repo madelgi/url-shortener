@@ -15,9 +15,9 @@ def create_app(config_name):
     login.init_app(app)
     jwt_manager.init_app(app)
     from .api.users import users, users_bp
-    from .api.shorten import shorten, shorten_bp
+    from .api.urls import urls, urls_bp
     app.register_blueprint(users_bp)
-    app.register_blueprint(shorten_bp)
+    app.register_blueprint(urls_bp)
 
     # Register error handlers
     register_error_handlers(app)
