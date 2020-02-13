@@ -14,7 +14,7 @@ from flask_jwt_extended import (
 )
 
 from url_shortener.extensions import db, jwt_manager
-from url_shortener.models import User, RevokedToken
+from url_shortener.models import Users, RevokedToken
 
 logger = logging.getLogger(__name__)
 
@@ -33,13 +33,19 @@ class Register(Resource):
     def post(self):
         args = self.parser.parse_args()
         username, email, password = str(args['username']), str(args['email']), str(args['password'])
-        if User.find_by_username(username):
+
+        if Users.find_by_username(username):
             return {"success": False, "message": f"User '{username}' already exists"}, 400
 
-        user = User(username=username, email=email)
+        email_not_unique = db.session.query(Users.email == email).first()
+        if email_not_unique:
+            return {"success": False, "message": f"Email '{email}' assigned to existing username"}
+
+        user = Users(username=username, email=email)
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
+
         access_token = create_access_token(identity=username)
         refresh_token = create_refresh_token(identity=username)
         return {
@@ -59,7 +65,8 @@ class Login(Resource):
     def post(self):
         args = self.parser.parse_args()
         username, password = str(args['username']), str(args['password'])
-        current_user = User.find_by_username(username)
+        current_user = Users.find_by_username(username)
+
         if not current_user:
             return {"success": False, "message": f"User '{username}' does not exist"}, 400
 

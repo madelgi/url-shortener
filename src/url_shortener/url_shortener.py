@@ -1,6 +1,7 @@
 from flask import Flask
 
 from werkzeug.exceptions import HTTPException, BadRequest
+from sqlalchemy.exc import IntegrityError
 
 from url_shortener.config import config_by_name
 

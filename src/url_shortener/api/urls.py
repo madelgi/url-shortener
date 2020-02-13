@@ -39,7 +39,8 @@ class Decode(Resource):
         if not q:
             return {"success": False, "message": f"String {encoded_str} does not map to an URL."}, 404
 
-        if not q.premium and (q.date_added + timedelta(seconds=EXPIRY_PERIOD)) < datetime.now():
+        # If associated with registered user, we don't delete the URL. Otherwise, expire after 7 days.
+        if not q.user_id and (q.date_added + timedelta(seconds=EXPIRY_PERIOD)) < datetime.now():
             db.session.query(UrlRegistry).filter(UrlRegistry._id == decoded).delete()
             db.session.commit()
             return {"success": False, "message": "Url has expired. Deleting record."}, 498
@@ -70,8 +71,9 @@ class Encode(Resource):
 
         # Check if user passes JWT
         user_id = get_raw_jwt().get('identity')
-        if user_id and Users.find_by_username(user_id):
-            db_obj.premium = True
+        user = Users.find_by_username(user_id)
+        if user:
+            db_obj.user_id = user._id
 
         db.session.add(db_obj)
         db.session.commit()
@@ -95,7 +97,11 @@ class Encode(Resource):
         if not q:
             return {"success": False, "message": f"String {encoded_str} does not map to an URL."}, 404
 
-        return {"success": True, "url": q.url}, 200
+        expiry = None
+        if not q.user_id:
+            expiry = q.date_added + timedelta(seconds=EXPIRY_PERIOD)
+
+        return {"success": True, "url": q.url, "expiry": str(expiry)}, 200
 
     def put(self) -> (dict, int):
         """Update an existing URL.

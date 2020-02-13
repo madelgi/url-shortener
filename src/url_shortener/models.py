@@ -1,14 +1,16 @@
 """Database models for the URL shortener app.
 """
 import datetime
+import logging
 
-import jwt
-from flask import current_app
+from sqlalchemy import ForeignKey
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_sqlalchemy
 
-from url_shortener.extensions import db, login
+from url_shortener.extensions import db
+
+
+logger = logging.getLogger(__name__)
 
 
 class Users(UserMixin, db.Model):
@@ -70,7 +72,7 @@ class UrlRegistry(db.Model):
     _id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.String(1024))
     date_added = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    user_id = rel
+    user_id = db.Column(db.Integer, ForeignKey('users._id'))
 
 
 class RevokedToken(db.Model):
