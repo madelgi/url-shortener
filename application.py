@@ -9,4 +9,5 @@ app = create_app(os.getenv('BOILERPLATE_ENV') or 'dev')
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    print(os.getenv('ALLOWED_HOSTS')
+    app.run(debug=os.getenv('DEBUG'), host='0.0.0.0', port=5001)

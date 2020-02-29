@@ -7,12 +7,12 @@ RUN mkdir /home/url_shortener/web
 WORKDIR /home/url_shortener
 
 # Build conda environment (do this before other steps b/c it is time consuming)
-COPY web/environment.yml .
+COPY environment.yml .
 RUN conda env create -f environment.yml
 RUN rm environment.yml
 
 # Copy other files/folders to working directory, switch working directory
-COPY web ./web
+COPY . ./web
 WORKDIR /home/url_shortener/web
 
 # Make boot scripts executable
@@ -23,5 +23,5 @@ RUN chown -R url_shortener:url_shortener ./
 USER url_shortener
 
 # Run program
-EXPOSE 5000
+EXPOSE 5001
 ENTRYPOINT ["sh", "-c", "./bin/boot_${ENV}.sh"]
