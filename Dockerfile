@@ -22,6 +22,9 @@ RUN chmod +x ./bin/boot_dev.sh ./bin/boot_prod.sh
 RUN chown -R url_shortener:url_shortener ./
 USER url_shortener
 
+# Set python path 
+ENV PYTHONPATH /home/url_shortener/web/src
+
 # Run program
-EXPOSE 5001
+EXPOSE 5000
 ENTRYPOINT ["sh", "-c", "./bin/boot_${ENV}.sh"]

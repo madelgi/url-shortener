@@ -23,7 +23,7 @@ EXPIRY_PERIOD = 60 * 60 * 24 * 7
 
 
 class Decode(Resource):
-    def post(self, encoded_str:  str):
+    def get(self, encoded_str:  str):
         """Use encoded string to  fetch URL from the URL registry.
 
         Arguments:
