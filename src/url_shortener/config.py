@@ -13,7 +13,7 @@ class Config:
 
 
 class ProductionConfig(Config):
-    username, password, db = os.getenv('POSTGRES_USER'), os.getenv('POSTGRES_PASSWORD'), os.getenv('POSTGRES_DB')
+    username, password, db = os.getenv('POSTGRES_USER'), os.getenv('POSTGRES_PASSWORD'), os.getenv('POSTGRES_URL_DB')
     host, port = os.getenv('POSTGRES_HOST'), os.getenv('POSTGRES_PORT')
     SQLALCHEMY_DATABASE_URI = f"postgresql://{username}:{password}@{host}:{port}/{db}"
     DEBUG = False
@@ -22,7 +22,7 @@ class ProductionConfig(Config):
 class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    username, password, db = os.getenv('POSTGRES_USER'), os.getenv('POSTGRES_PASSWORD'), os.getenv('POSTGRES_DB')
+    username, password, db = os.getenv('POSTGRES_USER'), os.getenv('POSTGRES_PASSWORD'), os.getenv('POSTGRES_URL_DB')
     SQLALCHEMY_DATABASE_URI = f"postgresql://{username}:{password}@postgres:5432/{db}"
 
 
